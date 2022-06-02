@@ -1,12 +1,11 @@
-// @ts-check
 import { resolve } from "path";
 import express from "express";
 import cookieParser from "cookie-parser";
 import { Shopify, ApiVersion } from "@shopify/shopify-api";
 import "dotenv/config";
 
-import applyAuthMiddleware from "./middleware/auth.js";
-import verifyRequest from "./middleware/verify-request.js";
+import applyAuthMiddleware from "./middleware/auth";
+import verifyRequest from "./middleware/verify-request";
 
 const USE_ONLINE_TOKENS = true;
 const TOP_LEVEL_OAUTH_COOKIE = "shopify_top_level_oauth";
@@ -100,8 +99,16 @@ export async function createServer(
 
     // Detect whether we need to reinstall the app, any request from Shopify will
     // include a shop in the query parameters.
-    if (app.get("active-shopify-shops")[shop] === undefined && shop) {
-      res.redirect(`/auth?${new URLSearchParams(req.query).toString()}`);
+    if (
+      typeof shop === "string" &&
+      app.get("active-shopify-shops")[shop] === undefined &&
+      shop
+    ) {
+      res.redirect(
+        `/auth?${new URLSearchParams(
+          req.query as Record<string, any>
+        ).toString()}`
+      );
     } else {
       next();
     }

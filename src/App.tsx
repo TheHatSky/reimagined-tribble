@@ -1,3 +1,4 @@
+import React from "react";
 import {
   ApolloClient,
   ApolloProvider,
@@ -22,7 +23,7 @@ export default function App() {
       <AppBridgeProvider
         config={{
           apiKey: process.env.SHOPIFY_API_KEY,
-          host: new URL(location).searchParams.get("host"),
+          host: new URL(location.toString()).searchParams.get("host"),
           forceRedirect: true,
         }}
       >
@@ -51,7 +52,7 @@ function MyProvider({ children }) {
 export function userLoggedInFetch(app) {
   const fetchFunction = authenticatedFetch(app);
 
-  return async (uri, options) => {
+  return async (uri: string, options?: RequestInit) => {
     const response = await fetchFunction(uri, options);
 
     if (
