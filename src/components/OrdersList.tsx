@@ -29,7 +29,7 @@ export function OrdersList() {
   const fetch = userLoggedInFetch(app);
 
   const updateOrders = useCallback(async () => {
-    await fetch("/orders")
+    await fetch("api/orders")
       .then((res) => res.json())
       .then(setOrders);
   }, []);
@@ -39,7 +39,7 @@ export function OrdersList() {
   }, [updateOrders]);
 
   useEffect(() => {
-    fetch("/payment-intents/list")
+    fetch("api/payment-intents/list")
       .then((r) => r.json())
       .then(setIntents);
   }, []);
@@ -107,7 +107,7 @@ export function OrdersList() {
             console.log("close buyer popup");
           }}
           onConfirm={async (buyer) => {
-            await fetch("/payment-intents/check", {
+            await fetch("api/payment-intents/check", {
               method: "POST",
               body: JSON.stringify({
                 seller_ids: ["seller-123"],

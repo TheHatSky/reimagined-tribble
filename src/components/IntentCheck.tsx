@@ -82,7 +82,7 @@ export const IntentCheck = ({ onClose, intentCheck, order }: Props) => {
 
             setLoading(true);
 
-            await fetch("/payment-intents", {
+            await fetch("api/payment-intents", {
               method: "POST",
               body: JSON.stringify(payment),
               headers: {

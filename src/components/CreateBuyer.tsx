@@ -66,7 +66,7 @@ export const CreateBuyer = ({ customer, onClose, onConfirm }: Props) => {
   const fetch = userLoggedInFetch(app);
 
   useEffect(() => {
-    fetch("/buyer?id=" + id)
+    fetch("api/buyer?id=" + id)
       .then((res) => res.json())
       .then((b) => (b != null ? setBuyer(b) : undefined));
   }, []);
@@ -101,7 +101,7 @@ export const CreateBuyer = ({ customer, onClose, onConfirm }: Props) => {
 
             setLoading(true);
             const { status, ...restBuyer } = buyer;
-            await fetch("/buyer", {
+            await fetch("api/buyer", {
               method: "POST",
               body: JSON.stringify(restBuyer),
               headers: {
