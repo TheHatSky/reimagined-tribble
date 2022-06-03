@@ -1,8 +1,25 @@
 import { resolve } from "path";
 import express from "express";
+import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import { Shopify, ApiVersion } from "@shopify/shopify-api";
+import {
+  Product,
+  Order,
+} from "@shopify/shopify-api/dist/rest-resources/2022-04";
 import "dotenv/config";
+import {
+  Buyer,
+  PaymentIntent,
+  PaymentIntentCheck,
+  PaymentIntentResponse,
+} from "./types";
+import axios from "axios";
+
+const ApiKey = "x9gJM-nA.xhPMI8KSX_-CY8fWUdUIP0_-4WGqW0N1" as const;
+
+axios.defaults.baseURL = "https://sandbox.finmid.com";
+axios.defaults.headers.common["X-API-KEY"] = ApiKey;
 
 import applyAuthMiddleware from "./middleware/auth";
 import verifyRequest from "./middleware/verify-request";
@@ -45,6 +62,7 @@ export async function createServer(
   app.set("use-online-tokens", USE_ONLINE_TOKENS);
 
   app.use(cookieParser(Shopify.Context.API_SECRET_KEY));
+  app.use(bodyParser.json());
 
   applyAuthMiddleware(app);
 
@@ -60,12 +78,107 @@ export async function createServer(
     }
   });
 
+  app.post("/buyer", verifyRequest(app), async (req, res) => {
+    const buyer = req.body as Buyer;
+    console.log("POST BUYER", buyer);
+
+    try {
+      await axios.post("/api/v1/buyers", buyer);
+
+      console.log("BUYER CREATED", buyer);
+      res.status(200).send();
+    } catch (e) {
+      console.log("error", e.response.data);
+      res.status(500).send();
+    }
+  });
+
+  app.get("/buyer", verifyRequest(app), async (req, res) => {
+    const id = req.query.id;
+
+    console.log("GET BUYER", id);
+
+    try {
+      const { data: buyer } = await axios.get<Buyer>(`/api/v1/buyers/${id}`);
+
+      console.log("BUYER", id, buyer);
+      res.status(200).send(buyer);
+    } catch (e) {
+      // console.log("error", e);
+      res.status(200).send(null);
+    }
+  });
+
+  app.post("/payment-intents/check", verifyRequest(app), async (req, res) => {
+    const intents = req.body as {
+      seller_ids: string[];
+      total_amount: number;
+      currency: "EUR";
+      payment_config_id: string;
+      buyer_id: string;
+    };
+    console.log("payment-intents check", intents);
+
+    try {
+      const { data } = await axios.post<PaymentIntentCheck>(
+        "/api/v1/payment-intents/check",
+        intents
+      );
+
+      console.log("PaymentIntentCheck", data);
+      res.status(200).send(data);
+    } catch (e) {
+      console.log("error", e.response.data);
+      res.status(500).send(null);
+    }
+  });
+
+  app.post("/payment-intents", verifyRequest(app), async (req, res) => {
+    const intents = req.body as PaymentIntent;
+    console.log("payment-intent", intents);
+
+    try {
+      const { data } = await axios.post<PaymentIntentCheck>(
+        "/api/v1/payment-intents",
+        intents
+      );
+
+      console.log("PaymentIntent", data);
+      res.status(200).send(data);
+    } catch (e) {
+      console.log("error", e.response.data);
+      res.status(500).send(null);
+    }
+  });
+
+  app.get("/payment-intents/list", verifyRequest(app), async (req, res) => {
+    try {
+      const {
+        data: { data },
+      } = await axios.get<{ data: PaymentIntentResponse[] }>(
+        "/api/v1/payment-intents/list?from=2000-01-01&to=2222-01-02&limit=100"
+      );
+
+      console.log("PaymentIntents", data);
+      res.status(200).send(data);
+    } catch (e) {
+      console.log("error", e.response.data);
+      res.status(500).send(null);
+    }
+  });
+
+  app.get("/orders", verifyRequest(app), async (req, res) => {
+    const session = await Shopify.Utils.loadCurrentSession(req, res, true);
+
+    const allOrders = await Order.all({ session });
+    // console.log("ORDERS", allOrders);
+    res.status(200).send(allOrders);
+  });
+
   app.get("/products-count", verifyRequest(app), async (req, res) => {
     const session = await Shopify.Utils.loadCurrentSession(req, res, true);
-    const { Product } = await import(
-      `@shopify/shopify-api/dist/rest-resources/${Shopify.Context.API_VERSION}/index.js`
-    );
 
+    // console.log("PRODUCTS", await Product.all({ session }));
     const countData = await Product.count({ session });
     res.status(200).send(countData);
   });
