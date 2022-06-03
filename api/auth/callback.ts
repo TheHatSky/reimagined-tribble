@@ -21,7 +21,7 @@ export default async function handle(req: VercelRequest, res: VercelResponse) {
       shop: session.shop,
       accessToken: session.accessToken,
       topic: "APP_UNINSTALLED",
-      path: "/webhooks",
+      path: "/api/webhooks",
     });
 
     if (!response["APP_UNINSTALLED"].success) {
@@ -31,7 +31,7 @@ export default async function handle(req: VercelRequest, res: VercelResponse) {
     }
 
     // Redirect to app with shop parameter upon auth
-    res.redirect(`/?shop=${session.shop}&host=${host}`);
+    res.redirect(`/api/?shop=${session.shop}&host=${host}`);
   } catch (e) {
     switch (true) {
       case e instanceof Shopify.Errors.InvalidOAuthError:
@@ -41,7 +41,7 @@ export default async function handle(req: VercelRequest, res: VercelResponse) {
       case e instanceof Shopify.Errors.CookieNotFound:
       case e instanceof Shopify.Errors.SessionNotFound:
         // This is likely because the OAuth session cookie expired before the merchant approved the request
-        res.redirect(`/auth?shop=${req.query.shop}`);
+        res.redirect(`/api/auth?shop=${req.query.shop}`);
         break;
       default:
         res.status(500);

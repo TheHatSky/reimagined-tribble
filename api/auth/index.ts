@@ -4,7 +4,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 export default async function handle(req: VercelRequest, res: VercelResponse) {
   if (!req.cookies["shopify_top_level_oauth"]) {
     return res.redirect(
-      `/auth/toplevel?${new URLSearchParams(
+      `/api/auth/toplevel?${new URLSearchParams(
         req.query as Record<string, string>
       ).toString()}`
     );
@@ -14,7 +14,7 @@ export default async function handle(req: VercelRequest, res: VercelResponse) {
     req,
     res,
     req.query.shop as string,
-    "/auth/callback",
+    "/api/auth/callback",
     true
   );
 

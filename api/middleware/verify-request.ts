@@ -15,7 +15,7 @@ export async function verifyRequest(req: VercelRequest, res: VercelResponse) {
 
   if (session && shop && session.shop !== shop) {
     // The current request is for a different shop. Redirect gracefully.
-    return res.redirect(`/auth?shop=${shop}`);
+    return res.redirect(`/api/auth?shop=${shop}`);
   }
 
   if (session?.isActive()) {
@@ -39,5 +39,5 @@ export async function verifyRequest(req: VercelRequest, res: VercelResponse) {
     }
   }
 
-  res.redirect(`/auth?shop=${shop}`);
+  res.redirect(`/api/auth?shop=${shop}`);
 }
